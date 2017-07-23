@@ -1,4 +1,6 @@
-# Overview
+# S2
+
+[![Build Status](https://travis-ci.org/danhhz/s2.svg?branch=master)](https://travis-ci.org/danhhz/s2)
 
 This is a library for manipulating geometric shapes. Unlike many geometry
 libraries, S2 is primarily designed to work with _spherical geometry_, i.e.,
