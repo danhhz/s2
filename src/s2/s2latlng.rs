@@ -13,16 +13,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! S2LatLng represents a point on the unit sphere as a pair of
+//! latitude-longitude coordinates.
+
 use super::{r3, s1};
 
 use std::f64::consts::PI;
 
+/// This class represents a point on the unit sphere as a pair of
+/// latitude-longitude coordinates. Like the rest of the "geometry" package, the
+/// intent is to represent spherical geometry as a mathematical abstraction, so
+/// functions that are specifically related to the Earth's geometry (e.g.
+/// easting/northing conversions) should be put elsewhere.
+///
+/// This class is intended to be copied by value as desired.
 #[derive(Debug, PartialEq)]
 pub struct S2LatLng {
-    pub coords: [f64; 2],
+    coords: [f64; 2],
 }
 
 impl S2LatLng {
+    /// Construct an S2LatLng from a direction vector (not necessarily unit
+    /// length).
     pub fn from_point(p: &super::S2Point) -> S2LatLng {
         let ll = S2LatLng {
             coords: [
@@ -33,9 +45,13 @@ impl S2LatLng {
         debug_assert!(ll.is_valid());
         return ll;
     }
+
+    /// Return a S2LatLng for the coordinates given in radians.
     pub fn from_radians(lat: f64, lng: f64) -> S2LatLng {
         return S2LatLng { coords: [lat, lng] };
     }
+
+    /// Return a S2LatLng for the coordinates given in degrees.
     pub fn from_degrees(lat: f64, lng: f64) -> S2LatLng {
         return S2LatLng {
             coords: [
@@ -45,28 +61,37 @@ impl S2LatLng {
         };
     }
 
+    /// Return the latitude of a point.
     pub fn latitude(p: &super::S2Point) -> s1::S1Angle {
         // We use atan2 rather than asin because the input vector is not
         // necessarily unit length, and atan2 is much more accurate than asin
         // near the poles.
         return s1::S1Angle::from_radians(p.z.atan2((p.x * p.x + p.y * p.y).sqrt()));
     }
+    /// Return the longitude of a point.
     pub fn longitude(p: &super::S2Point) -> s1::S1Angle {
         // Note that atan2(0, 0) is defined to be zero.
         return s1::S1Angle::from_radians(p.y.atan2(p.x));
     }
 
+    /// Return the latitude of this point.
     pub fn lat(&self) -> s1::S1Angle {
         return s1::S1Angle::from_radians(self.coords[0]);
     }
+    /// Return the longitude of this point.
     pub fn lng(&self) -> s1::S1Angle {
         return s1::S1Angle::from_radians(self.coords[1]);
     }
 
+    /// Return true if the latitude is between -90 and 90 degrees inclusive and
+    /// the longitude is between -180 and 180 degrees inclusive.
     pub fn is_valid(&self) -> bool {
         return self.lat().radians().abs() <= PI / 2.0 && self.lng().radians().abs() <= PI;
     }
 
+    /// Clamps the latitude to the range [-90, 90] degrees, and adds or
+    /// subtracts a multiple of 360 degrees to the longitude if necessary to
+    /// reduce it to the range [-180, 180].
     pub fn normalized(&self) -> S2LatLng {
         let lat = (-PI / 2.0).max((PI / 2.0).min(self.lat().radians()));
         let lng: f64;
@@ -78,6 +103,7 @@ impl S2LatLng {
         return S2LatLng { coords: [lat, lng] };
     }
 
+    /// Convert a normalized S2LatLng to the equivalent unit-length vector.
     pub fn to_point(&self) -> super::S2Point {
         let phi = self.lat().radians();
         let theta = self.lng().radians();
@@ -89,10 +115,19 @@ impl S2LatLng {
         };
     }
 
+    /// Return the distance (measured along the surface of the sphere) to the
+    /// given S2LatLng.  This is mathematically equivalent to:
+    ///
+    /// ```rust,ignore
+    ///  S1Angle::radians(self::to_point().angle(other.to_point()))
+    /// ```
+    ///
+    /// but this implementation is slightly more efficient. Both S2LatLngs must
+    /// be normalized.
     pub fn get_distance(&self, other: S2LatLng) -> s1::S1Angle {
         // This implements the Haversine formula, which is numerically stable
         // for small distances but only gets about 8 digits of precision for
-        // very large distances (e.g. antipodal points).  Note that 8 digits is
+        // very large distances (e.g. antipodal points). Note that 8 digits is
         // still accurate to within about 10cm for a sphere the size of the
         // Earth.
         //
@@ -123,7 +158,8 @@ mod tests {
     extern crate test;
     use super::S2LatLng;
     use super::s1::S1Angle;
-    use super::super::{S2, S2Testing};
+    use super::super::S2;
+    use super::super::tests::S2Testing;
     use std::f64::consts::PI;
 
     #[test]

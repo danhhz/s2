@@ -15,6 +15,12 @@
 
 #![feature(test)]
 
+//! This is a library for manipulating geometric shapes. Unlike many geometry
+//! libraries, S2 is primarily designed to work with _spherical geometry_, i.e.,
+//! shapes drawn on a sphere rather than on a planar 2D map. (In fact, the name S2
+//! is derived from the mathematical notation for the unit sphere.) This makes it
+//! especially suitable for working with geographic data.
+
 #[macro_use]
 extern crate lazy_static;
 extern crate test;
@@ -22,6 +28,9 @@ extern crate test;
 pub mod s2;
 
 pub mod r3 {
+    //! Module r3 implements types and functions for working with geometry in
+    //! ℝ³. See super::s2 for a more detailed overview.
+
     pub const X_AXIS: usize = 0;
     pub const Y_AXIS: usize = 1;
     pub const Z_AXIS: usize = 2;
@@ -54,9 +63,14 @@ pub mod r3 {
             }
             return Z_AXIS;
         }
+
+        /// Return the Euclidean norm of the vector.
         pub fn norm(&self) -> f64 {
             return self.dot(self).sqrt();
         }
+
+        /// Return a normalized version of the vector if the norm of the vector
+        /// is not 0.
         pub fn normalize(&self) -> Vector {
             if self.x == 0.0 && self.y == 0.0 && self.z == 0.0 {
                 return Vector {
@@ -67,6 +81,8 @@ pub mod r3 {
             }
             return self.mul(1.0 / self.norm());
         }
+
+        /// Multiplication by a scalar
         pub fn mul(&self, m: f64) -> Vector {
             return Vector {
                 x: self.x * m,
@@ -74,6 +90,7 @@ pub mod r3 {
                 z: self.z * m,
             };
         }
+
         pub fn dot(&self, other: &Vector) -> f64 {
             return self.x * other.x + self.y * other.y + self.z * other.z;
         }

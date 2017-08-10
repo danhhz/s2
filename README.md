@@ -39,3 +39,11 @@ Partial implementations of:
 - S2Point
 
 [the C++ S2 library]: https://code.google.com/archive/p/s2-geometry-library/
+
+# TODO
+
+- in-memory representation of S2CellId as a struct/enum/etc
+- audit which methods are public
+- reconsider the s2::S2LatLng naming studder
+- implement the same operator overloads as the c++ library
+- consider using the c++ library as a reference impl in tests (via ffi)
